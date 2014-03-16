@@ -1,20 +1,21 @@
 package main
 
 import (
-	"net/http"
+	"strconv"
 
 	"github.com/codegangsta/martini"
 	"github.com/martini-contrib/render"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "public/index.html")
+func ListTasks(r render.Render, tasks TaskService) {
+	r.JSON(200, tasks.GetAll())
 }
 
-func ListTasks(r render.Render) {
-	r.JSON(200, []string{"one", "two", "three"})
-}
-
-func GetTask(r render.Render, params martini.Params) {
-	r.JSON(200, map[string]interface{}{params["task"]: "world"})
+func GetTask(r render.Render, params martini.Params, tasks TaskService) {
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		r.JSON(400, map[string]string{"message": "id must be an integer"})
+		return
+	}
+	r.JSON(200, tasks.Get(id))
 }

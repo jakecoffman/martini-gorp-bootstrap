@@ -11,7 +11,9 @@ func main() {
 	m.Use(render.Renderer())
 
 	m.Get("/tasks", ListTasks)
-	m.Get("/tasks/:task", GetTask)
+	m.Get("/tasks/:id", GetTask)
+
+	m.MapTo(tasks, (*TaskService)(nil))
 
 	m.Run()
 }
