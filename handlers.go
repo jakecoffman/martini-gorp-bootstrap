@@ -17,5 +17,10 @@ func GetTask(r render.Render, params martini.Params, tasks TaskService) {
 		r.JSON(400, map[string]string{"message": "id must be an integer"})
 		return
 	}
-	r.JSON(200, tasks.Get(id))
+	task, ok := tasks.Get(id)
+	if !ok {
+		r.JSON(404, map[string]string{"message": "task not found"})
+		return
+	}
+	r.JSON(200, task)
 }

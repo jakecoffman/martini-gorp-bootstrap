@@ -8,11 +8,11 @@ type Task struct {
 }
 
 type TaskService interface {
-	Get(id int) *Task
+	Get(id int) (*Task, bool)
 	GetAll() []*Task
-	Add(e *Task) (int, string)
-	// Update(e *Task)
-	// Delete(id int)
+	Add(e *Task) (int, error)
+	Update(e *Task) bool
+	Delete(id int)
 }
 
 type taskService struct {
@@ -27,16 +27,13 @@ func init() {
 	tasks = &taskService{
 		m: make(map[int]*Task),
 	}
-
-	tasks.Add(&Task{Id: 1, Script: "echo 'hello world!'"})
-	println("Inserted one")
 }
 
 func (t *taskService) GetAll() []*Task {
 	t.RLock()
 	defer t.RUnlock()
+
 	if len(t.m) == 0 {
-		println("Length is 0")
 		return nil
 	}
 	ret := make([]*Task, len(t.m))
@@ -48,28 +45,37 @@ func (t *taskService) GetAll() []*Task {
 	return ret
 }
 
-func (t *taskService) Get(id int) *Task {
+func (t *taskService) Get(id int) (task *Task, ok bool) {
 	t.RLock()
 	defer t.RUnlock()
-	return t.m[id]
+
+	task, ok = t.m[id]
+	return
 }
 
-func (t *taskService) Add(e *Task) (int, string) {
+func (t *taskService) Add(e *Task) (int, error) {
 	t.Lock()
 	defer t.Unlock()
 
-	if t.exists(e) {
-		println("Can't add")
-		return 0, "Already exists"
-	}
-
 	t.seq++
 	e.Id = t.seq
-
 	t.m[e.Id] = e
-	return e.Id, ""
+	return e.Id, nil
 }
 
-func (t taskService) exists(e *Task) bool {
-	return false
+func (t *taskService) Update(task *Task) bool {
+	t.Lock()
+	defer t.Unlock()
+
+	if _, ok := t.m[task.Id]; !ok {
+		return false
+	}
+	t.m[task.Id] = task
+	return true
+}
+
+func (t *taskService) Delete(id int) {
+	t.Lock()
+	defer t.Unlock()
+	delete(t.m, id)
 }
