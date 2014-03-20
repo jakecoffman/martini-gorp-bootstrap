@@ -20,13 +20,13 @@ func main() {
 	m.Post("/tasks", binding.Json(Task{}), AddTask)
 	m.Put("/tasks/:id", binding.Json(Task{}), UpdateTask)
 
-	m.Map(initDb())
+	m.Map(initDb("dev.db"))
 
 	m.Run()
 }
 
-func initDb() *gorp.DbMap {
-	db, err := sql.Open("sqlite3", "dev.db")
+func initDb(name string) *gorp.DbMap {
+	db, err := sql.Open("sqlite3", name)
 	if err != nil {
 		panic("sql.Open failed")
 	}
