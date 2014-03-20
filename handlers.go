@@ -9,13 +9,20 @@ import (
 	"github.com/martini-contrib/render"
 )
 
-func ListTasks(r render.Render, db *gorp.DbMap) {
-	var tasks []Task
-	_, err := db.Select(&tasks, "select * from tasks order by id")
+type ListTasksView struct {
+	Id   int
+	Name string
+}
+
+func ListTasks(r render.Render, db *gorp.DbMap, log *log.Logger) {
+	var taskIds []ListTasksView
+	_, err := db.Select(&taskIds, "select id,name from tasks order by id")
 	if err != nil {
-		log.Fatalln("ERRORS")
+		log.Printf("Error selecting from database: %v", err)
+		r.JSON(500, map[string]string{"message": "error while retrieving tasks"})
+		return
 	}
-	r.JSON(200, tasks)
+	r.JSON(200, taskIds)
 }
 
 func GetTask(r render.Render, params martini.Params, db *gorp.DbMap) {

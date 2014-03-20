@@ -33,13 +33,21 @@ func initDb() *gorp.DbMap {
 
 	// add a table, setting the table name to 'tasks' and
 	// specifying that the Id property is an auto incrementing PK
+	err = dbmap.DropTables()
+	nilPanic(err)
 	dbmap.AddTableWithName(Task{}, "tasks").SetKeys(true, "Id")
+	err = dbmap.CreateTablesIfNotExists()
+	nilPanic(err)
 
 	// create the table. in a production system you'd generally
 	// use a migration tool, or create the tables via scripts
 	err = dbmap.CreateTablesIfNotExists()
-	if err != nil {
-		panic("Create tables failed")
-	}
+	nilPanic(err)
 	return dbmap
+}
+
+func nilPanic(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
