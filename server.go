@@ -27,29 +27,22 @@ func main() {
 
 func initDb(name string) *gorp.DbMap {
 	db, err := sql.Open("sqlite3", name)
-	if err != nil {
-		panic("sql.Open failed")
-	}
+	nilOrPanic(err)
 
-	// construct a gorp DbMap
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 
-	// add a table, setting the table name to 'tasks' and
-	// specifying that the Id property is an auto incrementing PK
 	err = dbmap.DropTables()
-	nilPanic(err)
+	nilOrPanic(err)
 	dbmap.AddTableWithName(Task{}, "tasks").SetKeys(true, "Id")
-	err = dbmap.CreateTablesIfNotExists()
-	nilPanic(err)
 
-	// create the table. in a production system you'd generally
-	// use a migration tool, or create the tables via scripts
+	// TODO: Use DB migration tool
 	err = dbmap.CreateTablesIfNotExists()
-	nilPanic(err)
+	nilOrPanic(err)
+
 	return dbmap
 }
 
-func nilPanic(err error) {
+func nilOrPanic(err error) {
 	if err != nil {
 		panic(err)
 	}
