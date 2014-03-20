@@ -9,13 +9,13 @@ import (
 	"github.com/martini-contrib/render"
 )
 
-type ListTasksView struct {
+type tasksView struct {
 	Id   int
 	Name string
 }
 
 func ListTasks(r render.Render, db *gorp.DbMap, log *log.Logger) {
-	var taskIds []ListTasksView
+	var taskIds []tasksView
 	_, err := db.Select(&taskIds, "select id,name from tasks order by id")
 	if err != nil {
 		log.Printf("Error selecting from database: %v", err)
@@ -41,4 +41,32 @@ func GetTask(r render.Render, params martini.Params, db *gorp.DbMap) {
 		return
 	}
 	r.JSON(200, task)
+}
+
+func AddTask(r render.Render, taskPayload Task, db *gorp.DbMap) {
+	// TODO: Check if this accepts Ids externally. If so, remove them.
+	err := db.Insert(&taskPayload)
+	if err != nil {
+		log.Printf("Error inserting: %v", err)
+		r.JSON(400, map[string]string{"message": "failed inserting task"})
+		return
+	}
+	r.JSON(201, taskPayload)
+}
+
+func UpdateTask(r render.Render, params martini.Params, taskPayload Task, db *gorp.DbMap) {
+	// TODO: Check if this works with Ids
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		r.JSON(400, map[string]string{"message": "id must be an integer"})
+		return
+	}
+	taskPayload.Id = id
+	count, err := db.Update(&taskPayload)
+	if err != nil || count != 1 {
+		log.Printf("Failed updating task %i: %v", err)
+		r.JSON(500, map[string]string{"message": "Failed to update task"})
+		return
+	}
+	r.JSON(200, taskPayload)
 }

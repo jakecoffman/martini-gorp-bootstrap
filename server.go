@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"github.com/codegangsta/martini"
+	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
 
 	"github.com/coopernurse/gorp"
@@ -16,6 +17,8 @@ func main() {
 
 	m.Get("/tasks", ListTasks)
 	m.Get("/tasks/:id", GetTask)
+	m.Post("/tasks", binding.Json(Task{}), AddTask)
+	m.Put("/tasks/:id", binding.Json(Task{}), UpdateTask)
 
 	m.Map(initDb())
 
