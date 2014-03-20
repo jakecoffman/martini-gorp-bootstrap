@@ -10,8 +10,8 @@ import (
 )
 
 type tasksView struct {
-	Id   int
-	Name string
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 func ListTasks(r render.Render, db *gorp.DbMap, log *log.Logger) {
